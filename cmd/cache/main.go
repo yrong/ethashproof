@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/tranvictor/ethashproof"
+	"github.com/snowfork/ethashproof"
 )
 
 func main() {

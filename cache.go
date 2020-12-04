@@ -9,7 +9,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/tranvictor/ethashproof/mtree"
+	"github.com/snowfork/ethashproof/mtree"
 )
 
 const CACHE_LEVEL uint64 = 15

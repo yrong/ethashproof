@@ -1,4 +1,6 @@
-module github.com/tranvictor/ethashproof
+module github.com/snowfork/ethashproof
+
+go 1.14
 
 require (
 	github.com/aristanetworks/goarista v0.0.0-20190204200901-2166578f3448 // indirect
