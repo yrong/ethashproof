@@ -1,4 +1,4 @@
-module github.com/tranvictor/ethashproof
+module github.com/snowfork/ethashproof
 
 go 1.14
 
