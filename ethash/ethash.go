@@ -39,6 +39,7 @@ import (
 	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/hashicorp/golang-lru/simplelru"
+	"golang.org/x/crypto/sha3"
 )
 
 var ErrInvalidDumpMagic = errors.New("invalid dump magic")
@@ -460,7 +461,7 @@ func New(config Config, notify []string, noverify bool) *Ethash {
 		caches:   newlru("cache", config.CachesInMem, newCache),
 		datasets: newlru("dataset", config.DatasetsInMem, newDataset),
 		update:   make(chan struct{}),
-		hashrate: metrics.NewMeterForced(),
+		hashrate: metrics.NewMeter(),
 	}
 	ethash.remote = startRemoteSealer(ethash, notify, noverify)
 	return ethash
@@ -474,7 +475,7 @@ func NewTester(notify []string, noverify bool) *Ethash {
 		caches:   newlru("cache", 1, newCache),
 		datasets: newlru("dataset", 1, newDataset),
 		update:   make(chan struct{}),
-		hashrate: metrics.NewMeterForced(),
+		hashrate: metrics.NewMeter(),
 	}
 	ethash.remote = startRemoteSealer(ethash, notify, noverify)
 	return ethash
@@ -640,7 +641,7 @@ func (ethash *Ethash) SetThreads(threads int) {
 func (ethash *Ethash) Hashrate() float64 {
 	// Short circuit if we are run the ethash in normal/test mode.
 	if ethash.config.PowMode != ModeNormal && ethash.config.PowMode != ModeTest {
-		return ethash.hashrate.Rate1()
+		return ethash.hashrate.Snapshot().Rate1()
 	}
 	var res = make(chan uint64, 1)
 
@@ -648,11 +649,11 @@ func (ethash *Ethash) Hashrate() float64 {
 	case ethash.remote.fetchRateCh <- res:
 	case <-ethash.remote.exitCh:
 		// Return local hashrate only if ethash is stopped.
-		return ethash.hashrate.Rate1()
+		return ethash.hashrate.Snapshot().Rate1()
 	}
 
 	// Gather total submitted hash rate of remote sealers.
-	return ethash.hashrate.Rate1() + float64(<-res)
+	return ethash.hashrate.Snapshot().Rate1() + float64(<-res)
 }
 
 // APIs implements consensus.Engine, returning the user facing RPC APIs.
@@ -678,5 +679,13 @@ func (ethash *Ethash) APIs(chain consensus.ChainHeaderReader) []rpc.API {
 // SeedHash is the seed to use for generating a verification cache and the mining
 // dataset.
 func SeedHash(block uint64) []byte {
-	return seedHash(block)
+	seed := make([]byte, 32)
+	if block < epochLength {
+		return seed
+	}
+	keccak256 := makeHasher(sha3.NewLegacyKeccak256())
+	for i := 0; i < int(block/epochLength); i++ {
+		keccak256(seed, seed)
+	}
+	return seed
 }

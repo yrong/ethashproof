@@ -10,7 +10,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/crypto/sha3"
 )
@@ -110,7 +109,7 @@ func MakeDAG(block uint64, dir string) {
 }
 
 func PathToDAG(epoch uint64, dir string) string {
-	seed := ethash.SeedHash(epoch*epochLength + 1)
+	seed := SeedHash(epoch*epochLength + 1)
 	var endian string
 	if !isLittleEndian() {
 		endian = ".be"
