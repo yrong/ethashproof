@@ -70,4 +70,4 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/tranvictor/ethutils => github.com/Snowfork/ethutils v0.0.0-20231121053021-19ca3fe628b8
+replace github.com/tranvictor/ethutils => github.com/Snowfork/ethutils v0.0.0-20231121055358-90d4f9fa98fd
